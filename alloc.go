@@ -32,7 +32,7 @@ type Allocator interface {
 	// Alloc creates a new item in memory with a size defined by the parameter
 	// it returns the offset within allocated memory to the location. If any
 	// errors occured they will be returned
-	Alloc(size uintptr) (offset uintptr, err error)
+	Alloc(size uintptr, alignment uintptr) (offset uintptr, err error)
 
 	// Offset takes the parameter offset, and returns the actual pointer to the
 	// location.
@@ -45,7 +45,34 @@ type Allocator interface {
 // New will create a new type in the allocator, and return a pointer
 // to that type
 func New[T any](a Allocator) (Ptr[T], error) {
-	offset, err := a.Alloc(unsafe.Sizeof(*new(T)))
+	offset, err := a.Alloc(
+		unsafe.Sizeof(*new(T)),
+		unsafe.Alignof(*new(T)),
+	)
+
 	return Ptr[T]{offset: offset, alloc: a}, err
 
+}
+
+// allocatorAlignment makes sure the byte slice is aligned to the larges possible size
+// which is 8. Then when we copy things over everything stays aligned
+const allocatorAlignment = 8
+
+// align updates the underlying byte array so that it aligns to the largest size
+func align_slice(b []byte, alignment uintptr) []byte {
+	// grab the location of the byte data
+	ptr := uintptr(unsafe.Pointer(&b[0]))
+	// calculate the location for the aligned value
+	alignedPtr := align(ptr, alignment)
+	// update the byte slice to point to the aligned value
+	return b[alignedPtr-ptr:]
+}
+
+// align will take a uintptr and a number and turn it into an aligned starting point
+func align(index, alignment uintptr) uintptr {
+	if index%alignment == 0 {
+		return index
+	}
+
+	return index + alignment - (index % alignment)
 }

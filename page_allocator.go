@@ -22,8 +22,8 @@ func NewPageAllocator() PageAllocator {
 // Alloc reserves the location in memory and returns the offset the
 // new allocation occured at. If the page can not fit the size required
 // ErrMemoryExhausted is returned.
-func (a *PageAllocator) Alloc(size uintptr) (uintptr, error) {
-	start := a.ref
+func (a *PageAllocator) Alloc(size uintptr, alignment uintptr) (uintptr, error) {
+	start := align(a.ref, alignment)
 	end := start + size
 
 	if pageSize < int(end) {
