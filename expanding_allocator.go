@@ -5,15 +5,27 @@ import (
 	"unsafe"
 )
 
+// ExpandingAllocator creates a byte slice which it expands over time to hold
+// all the data. Ince the byte slice is filled, it creates a new byte slice with
+// double the size, copies the data over, and keeps going. Any Deref Ptr values
+// will no longer be valid when we move the underlying data, so it is important
+// to call Deref only when you want or need the underlying value
 type ExpandingAllocator struct {
 	b *[]byte
 }
 
+// ensure we implement allocator
+var _ Allocator = &ExpandingAllocator{}
+
+// NewExpandingAllocator will create a new Expanding allocator
 func NewExpandingAllocator() ExpandingAllocator {
 	b := make([]byte, 0, pageSize)
 	return ExpandingAllocator{&b}
 }
 
+// Alloc reserves a section of memory and returns the offset to it. If we are going
+// to exhaust the memory, we create a new location for the memory with twice the size,
+// copy the data over and then allocate
 func (a *ExpandingAllocator) Alloc(size uintptr) (uintptr, error) {
 	start := uintptr(len(*a.b))
 	end := start + size
@@ -26,9 +38,16 @@ func (a *ExpandingAllocator) Alloc(size uintptr) (uintptr, error) {
 		*a.b = (*a.b)[:end]
 	}
 
-	return uintptr(unsafe.Pointer(&(*a.b)[start])), nil
+	return uintptr(start), nil
 }
 
+// Offset returns the actual uintptr
+func (a *ExpandingAllocator) Offset(offset uintptr) unsafe.Pointer {
+	return unsafe.Pointer(&(*a.b)[offset])
+}
+
+// Available always return MaxUInt64 since we will "never" run out of
+// memory
 func (a *ExpandingAllocator) Available() uintptr {
 	return math.MaxUint64
 }

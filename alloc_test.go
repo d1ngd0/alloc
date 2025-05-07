@@ -10,9 +10,9 @@ import (
 func TestAlloc(t *testing.T) {
 	arena := NewPageAllocator()
 	i1, _ := New[uint64](&arena)
-	*i1 = math.MaxUint64
+	*(i1.Deref()) = math.MaxUint64
 	i2, _ := New[uint64](&arena)
-	*i2 = math.MaxUint32
+	*(i2.Deref()) = math.MaxUint32
 
 	assert.Equal(t, arena.b[0:16], []byte{0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0x0, 0x0, 0x0, 0x0})
 }
@@ -32,7 +32,7 @@ func BenchmarkAlloc(b *testing.B) {
 
 	b.Run("page_allocator", func(b *testing.B) {
 		b.ReportAllocs()
-		allocInt := func(alloc Allocator) *[1024]byte {
+		allocInt := func(alloc Allocator) Ptr[[1024]byte] {
 			v, _ := New[[1024]byte](alloc)
 			return v
 		}
@@ -62,7 +62,7 @@ func BenchmarkExpandingAlloc(b *testing.B) {
 
 	b.Run("expanding_allocator_1000", func(b *testing.B) {
 		b.ReportAllocs()
-		allocInt := func(alloc Allocator) *[1024]byte {
+		allocInt := func(alloc Allocator) Ptr[[1024]byte] {
 			v, _ := New[[1024]byte](alloc)
 			return v
 		}
