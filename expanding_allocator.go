@@ -18,8 +18,8 @@ type ExpandingAllocator struct {
 var _ Allocator = &ExpandingAllocator{}
 
 // NewExpandingAllocator will create a new Expanding allocator
-func NewExpandingAllocator() ExpandingAllocator {
-	b := make([]byte, 0, pageSize)
+func NewExpandingAllocator(size int) ExpandingAllocator {
+	b := make([]byte, 0, size)
 	return ExpandingAllocator{&b}
 }
 

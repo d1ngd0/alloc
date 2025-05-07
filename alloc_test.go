@@ -17,6 +17,23 @@ func TestAlloc(t *testing.T) {
 	assert.Equal(t, arena.b[0:16], []byte{0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0x0, 0x0, 0x0, 0x0})
 }
 
+func TestPtr(t *testing.T) {
+	arena := NewExpandingAllocator(8)
+	// This fits and will not cause expansion
+	i, _ := New[uint64](&arena)
+	*(i.Deref()) = 100
+	// this should be pointed to one location
+	p1 := arena.Offset(i.offset)
+
+	// This will cause a new byte slice to be created, so the pointer
+	// will change, but i1 is still valid
+	_, _ = New[uint64](&arena)
+
+	p2 := arena.Offset(i.offset)
+	assert.NotEqual(t, p1, p2)
+	assert.Equal(t, *(i.Deref()), uint64(100))
+}
+
 func BenchmarkAlloc(b *testing.B) {
 	b.Run("control", func(b *testing.B) {
 		b.ReportAllocs()
@@ -67,7 +84,7 @@ func BenchmarkExpandingAlloc(b *testing.B) {
 			return v
 		}
 
-		alloc := NewExpandingAllocator()
+		alloc := NewExpandingAllocator(4096)
 		for b.Loop() {
 			for range 1000 {
 				var _ = allocInt(&alloc)
