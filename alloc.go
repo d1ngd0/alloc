@@ -34,7 +34,15 @@ func New[T any](a Allocator) (Ptr[T], error) {
 	)
 
 	return Ptr[T]{offset: offset, alloc: a}, err
+}
 
+// Must wraps any allocatation functions and panics if an error occurs
+func Must[T any](v T, err error) T {
+	if err != nil {
+		panic(err.Error())
+	}
+
+	return v
 }
 
 // allocatorAlignment makes sure the byte slice is aligned to the larges possible size

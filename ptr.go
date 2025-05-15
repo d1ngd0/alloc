@@ -31,3 +31,13 @@ func (p Ptr[T]) Set(v T) {
 func (p Ptr[T]) bytes() []byte {
 	return unsafe.Slice((*byte)(unsafe.Pointer(p.alloc.Offset(p.offset))), unsafe.Sizeof(*new(T)))
 }
+
+// IsNull returns if the pointer is null
+func (p Ptr[T]) IsNull() bool {
+	return p.alloc == nil
+}
+
+// Null sets the pointer to null
+func (p Ptr[T]) Null() {
+	p.alloc = nil
+}

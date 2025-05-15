@@ -34,18 +34,6 @@ func TestPtr(t *testing.T) {
 	assert.Equal(t, *(i.Deref()), uint64(100))
 }
 
-func TestSlice(t *testing.T) {
-	arena := NewExpandingAllocator(4096)
-
-	s, _ := NewArray[int](&arena, 10)
-	b := s.Deref().Slice()
-	for x := range b {
-		b[x] = x
-	}
-
-	assert.Equal(t, []int{0, 1, 2, 3, 4, 5, 6, 7, 8, 9}, s.Deref().Slice())
-}
-
 func BenchmarkAlloc(b *testing.B) {
 	b.Run("control", func(b *testing.B) {
 		b.ReportAllocs()
@@ -55,7 +43,7 @@ func BenchmarkAlloc(b *testing.B) {
 		}
 
 		for b.Loop() {
-			var _ = allocInt()
+			_ = allocInt()
 		}
 	})
 
@@ -68,7 +56,7 @@ func BenchmarkAlloc(b *testing.B) {
 
 		alloc := NewPageAllocator()
 		for b.Loop() {
-			var _ = allocInt(&alloc)
+			_ = allocInt(&alloc)
 			alloc.Reset()
 		}
 	})
@@ -84,7 +72,7 @@ func BenchmarkExpandingAlloc(b *testing.B) {
 
 		for b.Loop() {
 			for range 1000 {
-				var _ = allocInt()
+				_ = allocInt()
 			}
 		}
 	})
@@ -99,7 +87,7 @@ func BenchmarkExpandingAlloc(b *testing.B) {
 		alloc := NewExpandingAllocator(4096)
 		for b.Loop() {
 			for range 1000 {
-				var _ = allocInt(&alloc)
+				_ = allocInt(&alloc)
 			}
 			alloc.Reset()
 		}

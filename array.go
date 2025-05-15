@@ -1,6 +1,9 @@
 package alloc
 
-import "unsafe"
+import (
+	"iter"
+	"unsafe"
+)
 
 // Array is a pointer to the underlying bytes, and it's defined length. This type is
 // stored within the allocator. You can store this type for later use, as it doesn't
@@ -15,6 +18,50 @@ type Array[T any] struct {
 // no longer be in the allocator
 func (s Array[T]) Slice() []T {
 	return unsafe.Slice((*T)(unsafe.Pointer(s.data.Deref())), s.len)
+}
+
+// Length returns the length of the array
+func (s Array[T]) Length() int {
+	return s.len
+}
+
+// Expand creates a new Array with the new size specified, Copies the data
+// into the new array, and returns it. The new locations will have uninitialized
+// data in it.
+func (s Array[T]) Expand(size int) (Array[T], error) {
+	if s.len >= size {
+		panic("new size must be larger than previous size")
+	}
+
+	b, err := NewArray[T](s.data.alloc, size)
+	if err != nil {
+		return Array[T]{}, nil
+	}
+
+	copy(b.Deref().Slice(), s.Slice())
+	return *b.Deref(), nil
+}
+
+// Iter returns an iterator for the array
+func (s Array[T]) Iter() iter.Seq[T] {
+	return func(yield func(T) bool) {
+		for _, val := range s.Slice() {
+			if !yield(val) {
+				return
+			}
+		}
+	}
+}
+
+// IterIndex creates an iterator which returns the index and value
+func (s Array[T]) IterIndex() iter.Seq2[int, T] {
+	return func(yield func(int, T) bool) {
+		for x, val := range s.Slice() {
+			if !yield(x, val) {
+				return
+			}
+		}
+	}
 }
 
 // NewArray creates a new Array in the allocator and returns a pointer to the
