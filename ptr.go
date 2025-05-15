@@ -38,6 +38,6 @@ func (p Ptr[T]) IsNull() bool {
 }
 
 // Null sets the pointer to null
-func (p Ptr[T]) Null() {
+func (p *Ptr[T]) Null() {
 	p.alloc = nil
 }
