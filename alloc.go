@@ -45,6 +45,12 @@ func Must[T any](v T, err error) T {
 	return v
 }
 
+// Primitive changes the type into it's underlying go primitive type, for
+// instance, the special "String" type returns a string
+type Primitive[T any] interface {
+	Cast() T
+}
+
 // allocatorAlignment makes sure the byte slice is aligned to the larges possible size
 // which is 8. Then when we copy things over everything stays aligned
 const allocatorAlignment = 8

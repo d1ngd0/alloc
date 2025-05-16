@@ -28,11 +28,11 @@ func (s String) String() string {
 	return string(Array[byte](s).Slice())
 }
 
-// Primitive returns the underlying values as an unsafe golang
+// Cast returns the underlying values as an unsafe golang
 // string. There is no copying of bytes in the string, but it can change
 // if the underlying bytes change. You should only use this if you
 // **know** the value will not chnage
-func (s String) Primitive() string {
+func (s String) Cast() string {
 	if Array[byte](s).Length() == 0 {
 		return ""
 	}
@@ -45,5 +45,5 @@ func (s String) Primitive() string {
 
 // Cmp implements the Comparable interface which is used for object keys
 func (s String) Cmp(val String) int {
-	return cmp.Compare(s.Primitive(), val.Primitive())
+	return cmp.Compare(s.Cast(), val.Cast())
 }

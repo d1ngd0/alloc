@@ -33,7 +33,7 @@ func TestSimpleObject(t *testing.T) {
 	v, ok := obj.Get("key")
 
 	// woo hoo
-	assert.Equal(t, "value", v.Primitive())
+	assert.Equal(t, "value", v.Cast())
 	//                       ^ compare to primitive type, not the
 	//                       underlying type
 
@@ -46,7 +46,7 @@ func TestSimpleObject(t *testing.T) {
 	assert.Equal(t, false, ok)
 
 	// the value is then an empty value
-	assert.Equal(t, "", v.Primitive())
+	assert.Equal(t, "", v.Cast())
 }
 
 func TestObject(t *testing.T) {

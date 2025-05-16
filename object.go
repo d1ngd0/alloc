@@ -2,10 +2,6 @@ package alloc
 
 import "iter"
 
-type Primitive[T any] interface {
-	Primitive() T
-}
-
 // Object uses a linear search pattern to find the key specified.
 // C is the underlying primitive golang type. When you call Get or
 // iterate over the values, you likley want the golang primitive type, and
@@ -61,7 +57,7 @@ func (m Object[C, K, T]) index(key C) int {
 			break
 		}
 
-		if val.Primitive() == key {
+		if val.Cast() == key {
 			return x
 		}
 	}
@@ -103,7 +99,7 @@ func (m *Object[C, K, T]) grow() error {
 // of the object. Allocation errors can be returned when the underlying object is grown
 // if you do not cause an expansion there will be no errors.
 func (m *Object[C, K, T]) Set(key K, val T) error {
-	index := m.index(key.Primitive())
+	index := m.index(key.Cast())
 	if index != -1 {
 		m.vals.Slice()[index] = val
 		return nil
@@ -155,7 +151,7 @@ func (m Object[C, K, T]) IterPrimitive() iter.Seq2[C, T] {
 	return func(yield func(C, T) bool) {
 		for x, key := range m.keys.Slice() {
 			val := m.vals.Slice()[x]
-			if !yield(key.Primitive(), val) {
+			if !yield(key.Cast(), val) {
 				return
 			}
 		}
@@ -166,7 +162,7 @@ func (m Object[C, K, T]) IterPrimitive() iter.Seq2[C, T] {
 func (m Object[C, K, T]) PrimitiveKeys() iter.Seq[C] {
 	return func(yield func(C) bool) {
 		for _, key := range m.keys.Slice() {
-			if !yield(key.Primitive()) {
+			if !yield(key.Cast()) {
 				return
 			}
 		}
